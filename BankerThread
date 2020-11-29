@@ -1,0 +1,45 @@
+
+public class BankerThread extends Thread {
+
+    Bank bank;
+
+    int customerNum;
+
+    public BankerThread(Bank b1, int customerNum) {
+        this.bank = b1;
+        this.customerNum = customerNum;
+    }
+
+    @Override
+    public void run() {
+        synchronized (bank) {
+
+            while (!bank.safeProcess(customerNum)) {
+
+                try {
+                    bank.wait();    //Current Bank Thread will wait when it is not in safe state
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+                bank.requestResources(customerNum);
+                bank.calculateCustomerNeed(customerNum);
+                bank.runProcess(customerNum);
+                bank.numberRequests++;
+
+            if(bank.numberRequests < 3) {
+                bank.requestResources(customerNum);
+            }
+
+
+
+//         notifyAll();            //Release lock by notifying all other threads
+
+        }
+
+    }
+
+
+}
