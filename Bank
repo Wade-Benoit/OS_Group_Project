@@ -4,7 +4,7 @@ public class Bank {
     int minAvailable = 1;
     int maxAvailable = 10;
     int minNeed = 0;
-    int numberRequests = 0;
+
 
     int[] available;
     int[] currentAvailable;
@@ -67,8 +67,15 @@ public class Bank {
     }
 
 
-    public boolean requestResources(int customerNumber) {
+    public synchronized boolean requestResources(int customerNumber, int counter) {
 
+
+        boolean avail = true;
+        boolean last = false;
+
+
+
+        //Generate random request
         for (int i = 0; i < this.numResources; i++) {
             int customerNeed = (int) Math.round(Math.random() *
                     (this.maximum[customerNumber][i] - minNeed) + minNeed);
@@ -76,10 +83,98 @@ public class Bank {
 
             allocation[customerNumber][i] += customerResource[i];
 
-            if (allocation[customerNumber][i] > maximum[customerNumber][i])
-                allocation[customerNumber][i] = maximum[customerNumber][i];
 
+
+
+            if (allocation[customerNumber][i] > maximum[customerNumber][i])
+//                allocation[customerNumber][i] = maximum[customerNumber][i];
+
+            try {
+                wait();
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            notifyAll();
         }
+
+
+
+
+
+        if (counter >= 2) {
+            last = true;
+        }
+
+
+
+
+        //We are over two requests, on the last request for this customer
+        if(last) {
+
+            //Check if any of the available resources are less than needed resources
+            for(int i = 0; i < this.numResources; i++) {
+                if (available[i] < need[customerNumber][i]) {
+                    avail = false;
+                }
+            }
+
+
+            //While an available resource is less than needed, wait
+            while (avail == false) {
+
+                try {
+                    displayOnCommandLine("\nCustomer " + customerNumber + " must wait\n");
+                    wait();
+                }
+
+                catch(InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            //Subtract needed resources from available
+            for(int i = 0; i < numResources; i++) {
+                available[i] -= need[customerNumber][i];
+            }
+
+
+            return false;
+
+        //End if(last)
+        }
+
+
+        //When not last request, check if available is less than (1/2) needed resource
+        for(int i = 0; i < this.numResources; i++) {
+            if (available[i] < ((need[customerNumber][i]) / 2 )) {
+                avail = false;
+            }
+        }
+
+
+        //While an available resource is less than needed, wait
+        while (avail == false) {
+
+            try {
+                displayOnCommandLine("\nCustomer " + customerNumber + " must wait\n");
+                wait();
+            }
+
+            catch(InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        //Subtract needed resources from available
+        for(int i = 0; i < numResources; i++) {
+            available[i] -= need[customerNumber][i];
+        }
+
+
+
+
+
 
         displayCustomerRequest(customerNumber);
 
@@ -89,8 +184,17 @@ public class Bank {
     }
 
 
-    public void releaseRecources(int customerNumber, int[] release) {
-        // TODO Auto-generated method stub
+    public synchronized void releaseRecources(int customerNumber) {
+
+
+        for (int i = 0; i < numResources; i ++) {
+
+            available[i] += allocation[customerNumber][i];
+
+            allocation[customerNumber][i] = 0;
+        }
+
+        notifyAll();
 
     }
 
@@ -127,10 +231,7 @@ public class Bank {
             displayOnCommandLine("\n");
 
         }
-        else {
-            displayOnCommandLine("Safe Sequence Not Found\n");
-            displayOnCommandLine("Customer " + customerNumber + " must wait\n");
-        }
+
     }
 
     private static void displayOnCommandLine(Object o) {
@@ -142,7 +243,7 @@ public class Bank {
 
     public void displayCustomerRequest(int customerNumber) {
 
-        displayOnCommandLine("Customer " + customerNumber + " Request: \n");
+        displayOnCommandLine("\n\nCustomer " + customerNumber + " Request: \n");
 
         for (int b : this.customerResource) {
             displayOnCommandLine(b + " ");
