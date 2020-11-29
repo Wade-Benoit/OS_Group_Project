@@ -70,7 +70,7 @@ public class Driver {
         }
 
 
-        runBankersAlgorithm(5, 5); //resourceCount
+        runBankersAlgorithm(5, 5); //resourceCount Is Set to 5 Thread and 5 Resources HERE by defualt, change needed *****************************
 
     }
 
