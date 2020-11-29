@@ -70,7 +70,7 @@ public class Driver {
         }
 
 
-        runBankersAlgorithm(4, 4); //resourceCount
+        runBankersAlgorithm(5, 5); //resourceCount
 
     }
 
@@ -94,6 +94,18 @@ public class Driver {
 
         for (BankerThread p : customers) {
             p.start();
+        }
+
+
+
+        for (BankerThread z : customers) {
+            try {
+                z.join();
+            }
+
+            catch(InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
