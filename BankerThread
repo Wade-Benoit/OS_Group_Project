@@ -3,6 +3,7 @@ public class BankerThread extends Thread {
 
     Bank bank;
 
+    int counter = 0;
     int customerNum;
 
     public BankerThread(Bank b1, int customerNum) {
@@ -12,34 +13,29 @@ public class BankerThread extends Thread {
 
     @Override
     public void run() {
-        synchronized (bank) {
 
-            while (!bank.safeProcess(customerNum)) {
 
-                try {
-                    bank.wait();    //Current Bank Thread will wait when it is not in safe state
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
 
-            }
 
-                bank.requestResources(customerNum);
+                bank.requestResources(customerNum, counter);
+                counter++;
+                bank.requestResources(customerNum, counter);
+                counter++;
+                bank.requestResources(customerNum, counter);
+                counter++;
+
+                bank.releaseRecources(customerNum);
+
                 bank.calculateCustomerNeed(customerNum);
+
                 bank.runProcess(customerNum);
-                bank.numberRequests++;
-
-            if(bank.numberRequests < 3) {
-                bank.requestResources(customerNum);
-            }
 
 
 
-//         notifyAll();            //Release lock by notifying all other threads
+
 
         }
 
-    }
 
 
 }
