@@ -2,11 +2,16 @@ import java.util.Scanner;
 
 public class Driver {
     public static void main(String[] args) {
-        int lowerBound = 1;
-        int upperBound = 10;
-        int resourceCount = 1;
-        int threadCount = -1;
 
+        int lowerBound = 1;                 //Lower bound of possible number of resources
+        int upperBound = 10;                //Upper bound of possible number of resources
+        int resourceCount = 1;              //Initialize resource count default value
+        int threadCount = -1;               //Initialize thread count default value
+
+
+
+
+        //Check for valid Input by user on Command Line
         if (args.length >= 2) {
             boolean inputValid = true;
 
@@ -70,34 +75,47 @@ public class Driver {
         }
 
 
-        runBankersAlgorithm(5, 5); //resourceCount Is Set to 5 Thread and 5 Resources HERE by defualt, change needed *****************************
+        //Run the bankers algorithm with thread and resource numbers, m and n
+        runBankersAlgorithm(3, 8);
 
     }
 
+
+    //Display object on command line
     private static void displayOnCommandLine(Object o) {
         System.out.print(o);
     }
 
+
+
+    //Function driver for Bankers Algorithm
     private static void runBankersAlgorithm(int resourceCount, int threadCount) {
+
         String displayInputsString = String.format
                 ("Running...",
                         resourceCount, threadCount);
         displayOnCommandLine(displayInputsString);
 
+
+        //Bank object Instantiated, bank
         Bank bank = new Bank(resourceCount, threadCount);
 
+        //Bank Thread Instantiated, customers
         BankerThread[] customers = new BankerThread[threadCount];
 
+
+        //Initialize all customers as bank threads
         for (int p = 0; p < customers.length; p++) {
             customers[p] = new BankerThread(bank, p);
         }
 
+        //Start all Customer Threads
         for (BankerThread p : customers) {
             p.start();
         }
 
 
-
+        //Join all Customer Threads
         for (BankerThread z : customers) {
             try {
                 z.join();
@@ -107,6 +125,10 @@ public class Driver {
                 e.printStackTrace();
             }
         }
+
+
+        //Display Final State of Resource Vector and Allocation Matrix
+        bank.getFinalState();
     }
 
 
